@@ -4,29 +4,36 @@ import java.util.*;
 
 public class Timetable {
 
-    private final Map<DayOfWeek, Map<TimeOfDay, List<TrainingSession>>> timetable = new HashMap<>();
+    private final Map<DayOfWeek, Map<TimeOfDay, Set<TrainingSession>>> timetable = new HashMap<>();
 
     public Timetable() {
         for (DayOfWeek day : DayOfWeek.values()) {
-            Map<TimeOfDay, List<TrainingSession>> teeMapByDayOfWeek = new TreeMap<>();
+            Map<TimeOfDay, Set<TrainingSession>> teeMapByDayOfWeek = new TreeMap<>();
             timetable.put(day, teeMapByDayOfWeek);
         }
     }
 
     public void addNewTrainingSession(TrainingSession trainingSession) {
         //сохраняем занятие в расписании
-        Map<TimeOfDay, List<TrainingSession>> treeMap = timetable.get(trainingSession.getDayOfWeek());
-        List<TrainingSession> list = treeMap.getOrDefault(trainingSession.getTimeOfDay(), new ArrayList<>());
-        list.add(trainingSession);
-        treeMap.put(trainingSession.getTimeOfDay(), list);
-        timetable.put(trainingSession.getDayOfWeek(), treeMap);
+        Group trainingGroup = trainingSession.getGroup();
+        DayOfWeek trainingDay = trainingSession.getDayOfWeek();
+        if (!trainingGroup.checkDay(trainingDay)) {
+            Map<TimeOfDay, Set<TrainingSession>> treeMap = timetable.get(trainingSession.getDayOfWeek());
+            Set<TrainingSession> hashSet = treeMap.getOrDefault(trainingSession.getTimeOfDay(), new HashSet<>());
+            trainingGroup.addDay(trainingDay);
+            hashSet.add(trainingSession);
+            treeMap.put(trainingSession.getTimeOfDay(), hashSet);
+            timetable.put(trainingSession.getDayOfWeek(), treeMap);
+        } else {
+            System.out.print("Для этой группы уже есть занятие в этот день.");
+        }
     }
 
-    public Map<TimeOfDay, List<TrainingSession>> getTrainingSessionsForDay(DayOfWeek dayOfWeek) {
+    public Map<TimeOfDay, Set<TrainingSession>> getTrainingSessionsForDay(DayOfWeek dayOfWeek) {
         return timetable.get(dayOfWeek);
     }
 
-    public List<TrainingSession> getTrainingSessionsForDayAndTime(DayOfWeek dayOfWeek, TimeOfDay timeOfDay) {
+    public Set<TrainingSession> getTrainingSessionsForDayAndTime(DayOfWeek dayOfWeek, TimeOfDay timeOfDay) {
         return timetable.get(dayOfWeek).get(timeOfDay);
     }
 
@@ -40,7 +47,6 @@ public class Timetable {
                 count += timetable.get(dayOfWeek).get(timeOfDay).size();
             }
         }
-
         return count;
     }
 
@@ -49,7 +55,7 @@ public class Timetable {
             return 0;
         }
         int count = 0;
-        for (Map.Entry<TimeOfDay, List<TrainingSession>> treeMap : timetable.get(dayOfWeek).entrySet()) {
+        for (Map.Entry<TimeOfDay, Set<TrainingSession>> treeMap : timetable.get(dayOfWeek).entrySet()) {
             count += treeMap.getValue().size();
         }
         return count;
@@ -62,7 +68,6 @@ public class Timetable {
         if (!timetable.get(dayOfWeek).containsKey(timeOfDay)) {
             return 0;
         }
-
         return timetable.get(dayOfWeek).get(timeOfDay).size();
     }
 }
