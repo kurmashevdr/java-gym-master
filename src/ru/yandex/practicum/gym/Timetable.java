@@ -37,6 +37,26 @@ public class Timetable {
         return timetable.get(dayOfWeek).get(timeOfDay);
     }
 
+    public Set<CounterCoachSessions> getCountByCoaches() {
+        Map<Coach, CounterCoachSessions> map = new HashMap<>();
+        for (DayOfWeek dayOfWeek : DayOfWeek.values()) {
+            if (timetable.get(dayOfWeek).isEmpty()) {
+                continue;
+            }
+            for (TimeOfDay timeOfDay : timetable.get(dayOfWeek).keySet()) {
+                for (TrainingSession trainingSession : timetable.get(dayOfWeek).get(timeOfDay)) {
+                    CounterCoachSessions counterCoachSessions = map.getOrDefault(trainingSession.getCoach(),
+                            new CounterCoachSessions(trainingSession.getCoach()));
+                    counterCoachSessions.addSession();
+                    map.put(trainingSession.getCoach(), counterCoachSessions);
+                }
+            }
+        }
+        NavigableSet<CounterCoachSessions> navigableSet = new TreeSet<>(map.values());
+
+        return navigableSet.descendingSet();
+    }
+
     public int getCountTrainingSessions() {
         int count = 0;
         for (DayOfWeek dayOfWeek : DayOfWeek.values()) {
@@ -44,7 +64,7 @@ public class Timetable {
                 continue;
             }
             for (TimeOfDay timeOfDay : timetable.get(dayOfWeek).keySet()) {
-                count += timetable.get(dayOfWeek).get(timeOfDay).size();
+                count += getTrainingSessionsForDayAndTime(dayOfWeek, timeOfDay).size();
             }
         }
         return count;
@@ -68,6 +88,6 @@ public class Timetable {
         if (!timetable.get(dayOfWeek).containsKey(timeOfDay)) {
             return 0;
         }
-        return timetable.get(dayOfWeek).get(timeOfDay).size();
+        return getTrainingSessionsForDayAndTime(dayOfWeek, timeOfDay).size();
     }
 }
