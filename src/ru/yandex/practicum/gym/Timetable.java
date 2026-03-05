@@ -31,10 +31,8 @@ public class Timetable {
 
     public List<TrainingSession> getTrainingSessionsForDay(DayOfWeek dayOfWeek) {
         List<TrainingSession> resultList = new LinkedList<>();
-        if (!timetable.get(dayOfWeek).isEmpty()) {
-            for (TimeOfDay timeOfDay : timetable.get(dayOfWeek).keySet()) {
-                resultList.addAll(timetable.get(dayOfWeek).get(timeOfDay));
-            }
+        for (List<TrainingSession> trainingSessions : timetable.get(dayOfWeek).values()) {
+            resultList.addAll(trainingSessions);
         }
         return resultList;
     }
